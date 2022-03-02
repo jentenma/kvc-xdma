@@ -59,8 +59,8 @@ build_kmod_container() {
         --file ${KMOD_CONTAINER_BUILD_FILE}          \
         --label="name=${KVC_SOFTWARE_NAME}"          \
         --build-arg KVER=${KVC_KVER}                 \
+        --build-arg KMODXDMAVER=${KMOD_XDMA_DRIVER_VERSION} \
         --build-arg KMODVER=${KMOD_SOFTWARE_VERSION} \
-        --build-arg KMODXDMAVER=${KMOD_XDMA_DRIVER_VERSION} \	
         ${KMOD_CONTAINER_BUILD_CONTEXT}
 
     # get rid of any dangling containers if they exist
