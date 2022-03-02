@@ -1,0 +1,37 @@
+FROM registry.access.redhat.com/ubi8:latest
+MAINTAINER "coreos@lists.fedoraproject.org"
+WORKDIR /build/
+
+ADD xdma.mk xdma.mk
+
+# First update the base container to latest versions of everything
+RUN yum update -y
+
+# Expecting kmod software version as an input to the build
+ARG KMODVER
+
+# version of the xdma driver
+ARG KMODXDMAVER
+
+# Grab the software from upstream
+ADD https://github.com/Xilinx/dma_ip_drivers/archive/${KMODVER}.tar.gz ./file.tar.gz
+
+# Grab the software from upstream
+# ADD http://9.42.77.146/prvsn-files/xdma-${KMODVER}.tar.gz ./file.tar.gz
+RUN tar -x --strip-components=1 -f ./file.tar.gz
+
+# Expecting kernel version as an input to the build
+ARG KVER
+
+# Note, your host must have access to repos where kernel developement
+# packages can be installed. If it doesn't the following steps will
+# fail
+
+# Prep and build the module
+RUN yum install -y make sudo
+
+RUN cat xdma.mk >> /build/XDMA/linux-kernel/xdma/Makefile
+
+RUN make -C /build/XDMA/linux-kernel/xdma buildprep KVER=${KVER} KMODVER=${KMODVER}
+RUN make -C /build/XDMA/linux-kernel/xdma all  KVER=${KVER} KMODVER=${KMODVER}
+RUN make -C /build/XDMA/linux-kernel/xdma kvcinstall   KVER=${KVER} KMODVER=${KMODVER}
