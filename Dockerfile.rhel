@@ -6,6 +6,7 @@ ADD xdma.mk xdma.mk
 
 # First update the base container to latest versions of everything
 RUN yum update -y
+RUN yum install -y git
 
 # Expecting kmod software version as an input to the build
 ARG KMODVER
@@ -14,11 +15,15 @@ ARG KMODVER
 ARG KMODXDMAVER
 
 # Grab the software from upstream
-ADD https://github.com/Xilinx/dma_ip_drivers/archive/${KMODVER}.tar.gz ./file.tar.gz
+#ADD https://github.com/Xilinx/dma_ip_drivers/archive/${KMODVER}.tar.gz ./file.tar.gz
 
 # Grab the software from upstream
 # ADD http://9.42.77.146/prvsn-files/xdma-${KMODVER}.tar.gz ./file.tar.gz
-RUN tar -x --strip-components=1 -f ./file.tar.gz
+# RUN tar -x --strip-components=1 -f ./file.tar.gz
+
+RUN git clone https://github.com/Xilinx/dma_ip_drivers.git
+WORKDIR dma_ip_drivers
+RUN git checkout ${KMODVER}
 
 # Expecting kernel version as an input to the build
 ARG KVER
@@ -27,11 +32,13 @@ ARG KVER
 # packages can be installed. If it doesn't the following steps will
 # fail
 
+WORKDIR /build/
+
 # Prep and build the module
 RUN yum install -y make sudo
 
-RUN cat xdma.mk >> /build/XDMA/linux-kernel/xdma/Makefile
+RUN cat xdma.mk >> /build/dma_ip_drivers/XDMA/linux-kernel/xdma/Makefile
 
-RUN make -C /build/XDMA/linux-kernel/xdma buildprep KVER=${KVER} KMODVER=${KMODVER}
-RUN make -C /build/XDMA/linux-kernel/xdma all  KVER=${KVER} KMODVER=${KMODVER}
-RUN make -C /build/XDMA/linux-kernel/xdma kvcinstall   KVER=${KVER} KMODVER=${KMODVER}
+RUN make -C /build/dma_ip_drivers/XDMA/linux-kernel/xdma buildprep KVER=${KVER} KMODVER=${KMODVER}
+RUN make -C /build/dma_ip_drivers/XDMA/linux-kernel/xdma all  KVER=${KVER} KMODVER=${KMODVER}
+RUN make -C /build/dma_ip_drivers/XDMA/linux-kernel/xdma kvcinstall   KVER=${KVER} KMODVER=${KMODVER}
