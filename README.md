@@ -17,9 +17,11 @@ The container build will:
 After podman and kmods-via-containers have been installed on the host
 
 In the directory where this repo has been cloned to:
+```
 make install
 kmods-via-containers build xdma $(uname -r)
 systemctl enable kmods-via-containers@xdma.service
 systemctl start kmods-via-containers@xdma.service
 lsmod | grep xdma
+```
 
